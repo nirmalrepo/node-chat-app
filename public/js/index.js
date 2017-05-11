@@ -19,10 +19,10 @@ socket.on('newMessage',function(message){
 
 //to server
 
-socket.emit('createMessage',{
-    from:'Nirmal',
-    text:'Yup, that works for me',
-});
+// socket.emit('createMessage',{
+//     from:'Nirmal',
+//     text:'Yup, that works for me',
+// });
 
 
 

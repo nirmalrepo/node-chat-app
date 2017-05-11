@@ -22,21 +22,25 @@ var io=scoketIO(server);
 app.use(express.static(publicPath));
 
 //event handlers
-//We wont use io other than connection
 io.on('connection',(socket)=>{
     console.log('New user connected');
 
     //from server to client
-    socket.emit('newMessage',{
-        from:'John',
-        text:'See you then',
-        createdAt:123,
-    });
+    // socket.emit('newMessage',{
+    //     from:'John',
+    //     text:'See you then',
+    //     createdAt:123,
+    // });
 
     //from client to server
 
     socket.on('createMessage',(message)=>{
-        console.log('createMessage',message)
+        console.log('createMessage',message);
+        io.emit('newMessage',{
+            from:message.from,
+            text:message.text,
+            createdAt:new Date().getTime()
+        });
     });
     socket.on('disconnect',()=>{
         console.log('User was disconnected')
