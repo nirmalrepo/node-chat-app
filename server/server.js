@@ -6,6 +6,7 @@ const http= require('http');
 const express=require('express');
 const scoketIO=require('socket.io');
 
+const {generateMessage}=require('./utils/message');
 const publicPath= path.join(__dirname,'../public');
 //heroku port confgurations
 const port=process.env.PORT || 3000;
@@ -26,28 +27,15 @@ io.on('connection',(socket)=>{
     console.log('New user connected');
 
     //from server to client
-    socket.emit('newMessage',{
-        from:'Admin',
-        text:'Welcome to Chat room',
-        createdAt:new Date().getTime()
-    });
+    socket.emit('newMessage',generateMessage('Admin','Welcome to the chat app'));
 
-    socket.broadcast.emit('newMessage',{
-            from:'Admin',
-            text:'New user joined',
-            createdAt:new Date().getTime()
-        }
-    );
+    socket.broadcast.emit('newMessage',generateMessage('Admin','New user joined'));
 
     //from client to server
 
     socket.on('createMessage',(message)=>{
         console.log('createMessage',message);
-        // io.emit('newMessage',{
-        //     from:message.from,
-        //     text:message.text,
-        //     createdAt:new Date().getTime()
-        // });
+        io.emit('newMessage',generateMessage(message.from,message.text));
 
         //fire to everybody but me
         // socket.broadcast.emit('newMessage',{
