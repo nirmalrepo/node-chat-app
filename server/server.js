@@ -6,7 +6,7 @@ const http= require('http');
 const express=require('express');
 const scoketIO=require('socket.io');
 
-const {generateMessage}=require('./utils/message');
+const {generateMessage,generateLocationMessage}=require('./utils/message');
 const publicPath= path.join(__dirname,'../public');
 //heroku port confgurations
 const port=process.env.PORT || 3000;
@@ -31,8 +31,14 @@ io.on('connection',(socket)=>{
 
     socket.broadcast.emit('newMessage',generateMessage('Admin','New user joined'));
 
+
+
     //from client to server
 
+    socket.on('createLocationMessage',(coords)=>{
+        console.log('User was disconnected');
+        io.emit('newLocationMessage',generateLocationMessage('Admin',coords.latitude,coords.longitude));
+    });
 
     socket.on('createMessage',(message,callback)=>{
         console.log('createMessage',message);
