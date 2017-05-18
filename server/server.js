@@ -5,11 +5,13 @@ const socketIO = require('socket.io');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
+const {Users} = require('./utils/users');
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 var app = express();
 var server = http.createServer(app);
 var io = socketIO(server);
+var users=new Users();
 
 app.use(express.static(publicPath));
 
@@ -24,15 +26,19 @@ io.on('connection', (socket) => {
     socket.on('join', (params,callback) => {
         if(!isRealString(params.name) || !isRealString(params.room)){
             //runs the err callback because function has a parameter with the callback function
-            callback('Name and room name are requires');
+            return callback('Name and room name are requires');
         }else {
             //join the group
             socket.join(params.room);
+            //First remove the user if existing room and then add to the new room
+            users.removeUser(socket.id);
+            users.addUser(socket.id,params.name,params.room);
 
             //io.emit - to all io.to('The office Fans').emit-to all the people in that room
             //socket.broadcast.emit - to all except current socket.broadcast.to('The office Fans).emit
             //socket.emit - specifically to one user
 
+            io.to(params.room).emit('updateUserList', users.getUserList(params.room));
             socket.emit('newMessage', generateMessage('Admin', 'Welcome to the chat app'));
 
             socket.broadcast.to(params.room).emit('newMessage', generateMessage('Admin', `${params.name} has joined`));
@@ -51,6 +57,14 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
+        //we remove user on disconnecting the app
+        var user=users.removeUser(socket.id);
+
+        if(user){
+            io.to(user.room).emit('updateUserList', users.getUserList(user.room));
+            io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left`));
+
+        }
         console.log('User was disconnected');
     });
 });
