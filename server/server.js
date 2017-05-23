@@ -2,6 +2,7 @@ const path = require('path');
 const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
+var changeCase = require('change-case');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
@@ -29,6 +30,7 @@ io.on('connection', (socket) => {
             return callback('Name and room name are requires');
         }else {
             //join the group
+            params.room=changeCase.upperCase(params.room);
             socket.join(params.room);
             //First remove the user if existing room and then add to the new room
             users.removeUser(socket.id);
